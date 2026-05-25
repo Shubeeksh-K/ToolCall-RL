@@ -1,0 +1,37 @@
+[project]
+name = "toolcall-rl"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Shubeeksh-K", email = "shubeeksh26@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "accelerate>=1.13.0",
+    "datasets>=4.8.5",
+    "google-adk>=2.0.0",
+    "litellm>=1.80.8",
+    "peft>=0.19.1",
+    "pydantic>=2.13.4",
+    "python-dotenv>=1.2.2",
+    "rich>=15.0.0",
+    "tensorboard>=2.20.0",
+    "torch>=2.12.0",
+    "transformers>=5.9.0",
+    "trl>=1.4.0",
+    "typer>=0.25.1",
+]
+
+[project.scripts]
+toolcall-rl = "toolcall_rl:main"
+
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "ruff>=0.15.13",
+]
