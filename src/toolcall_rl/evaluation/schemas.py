@@ -104,8 +104,6 @@ TOOL_SCHEMAS = {
     },
 }
 
-SFT_TOOL_NAMES = list(TOOL_SCHEMAS)
-
 TOOL_SCHEMAS.update(
     {
         "reserve_table": {
@@ -461,7 +459,3 @@ def system_prompt_for_tool(tool_name: str) -> str:
         if tool_name in tool_batch:
             return build_system_prompt(tool_batch)
     raise KeyError(tool_name)
-
-
-# Keep the SFT and its original held-out evaluation prompt unchanged.
-SYSTEM_PROMPT = build_system_prompt(SFT_TOOL_NAMES)

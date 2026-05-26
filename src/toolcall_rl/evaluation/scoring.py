@@ -8,8 +8,15 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from .cases import EvalCase
 from toolcall_rl.tools.calculator import calculator
+
+
+@dataclass(frozen=True)
+class EvalCase:
+    prompt: str
+    expected_tool: str
+    expected_args: dict[str, Any]
+    system_prompt: str = ""
 
 
 @dataclass(frozen=True)

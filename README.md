@@ -38,37 +38,10 @@ The default model string is `ollama_chat/smollm:1.7b`.
 
 ## Dataset
 
-Build the canonical tool-call dataset:
+The retained training inputs are:
 
-```bash
-uv run python -m toolcall_rl.data.build_dataset
-```
-
-Validate it:
-
-```bash
-uv run python -m toolcall_rl.data.validate_dataset
-```
-
-Export the SFT view from the canonical data:
-
-```bash
-uv run python -m toolcall_rl.data.export_sft
-```
-
-Build the direct 50-tool GRPO source data and export its training view:
-
-```bash
-uv run python -m toolcall_rl.data.build_grpo_dataset
-uv run python -m toolcall_rl.data.export_grpo
-```
-
-Generated files:
-
-- `data/tool_call_dataset.jsonl`: original 20-tool source records, 50 examples per tool.
-- `data/sft/tool_call_sft.jsonl`: SFT records for the original 20 tools, first 25 examples per tool.
-- `data/grpo/tool_call_source.jsonl`: GRPO-only source records, 50 direct examples per tool across 50 tools.
-- `data/grpo/tool_call_grpo.jsonl`: prompt and labels exported from the GRPO source.
+- `data/sft/tool_call_sft.jsonl`: SFT records for the original 20 tools, 25 examples per tool.
+- `data/grpo/tool_call_grpo.jsonl`: GRPO records for all 50 tools, 50 direct examples per tool.
 
 SFT retains the original 20-tool curriculum and its 500 simple examples. The
 GRPO curriculum contains 50 tools and 2,500 direct-request examples, including
@@ -103,12 +76,12 @@ max_steps=2
 Outputs:
 
 - LoRA adapter: `outputs/sft_smollm_20tools`
-- TensorBoard logs: `outputs/tensorboard/sft_smollm_20tools`
+- TensorBoard logs: `outputs/sft_smollm_20tools/runs`
 
 Launch TensorBoard:
 
 ```bash
-uv run tensorboard --logdir outputs/tensorboard
+uv run tensorboard --logdir outputs
 ```
 
 ## GRPO Training
@@ -129,22 +102,11 @@ The GRPO reward is the sum of four binary rewards:
 Outputs:
 
 - GRPO adapter: `outputs/grpo_smollm_50tools_direct`
-- TensorBoard logs: `outputs/tensorboard/grpo_smollm_50tools_direct`
+- TensorBoard logs: `outputs/grpo_smollm_50tools_direct/runs`
 
 ## Evaluation
 
-### Original 20-Tool Benchmark
-
-These notebooks retain the first experiment using the original 20 tools. They
-are useful historical measurements, but are separate from the expanded
-50-tool comparison.
-
-- `notebooks/baseline_eval_table.ipynb`: base-model evaluation; saves `outputs/baseline_eval_results.jsonl` and `outputs/baseline_eval_results.csv`.
-- `notebooks/sft_eval_table.ipynb`: SFT adapter evaluation; saves `outputs/sft_20tools_eval_results.jsonl` and `outputs/sft_20tools_eval_results.csv`.
-
-### Direct 50-Tool Benchmark
-
-Use these three notebooks for the final apples-to-apples comparison. They all
+Use these three notebooks for the direct 50-tool comparison. They all
 load the same 50 held-out direct requests from
 `src/toolcall_rl/evaluation/direct_50_cases.py` and use the same four binary
 reward metrics.
@@ -153,8 +115,10 @@ reward metrics.
 - `notebooks/sft_50_tools_eval_table.ipynb`: 20-tool SFT adapter before GRPO; saves `outputs/sft_50tools_direct_eval_results.jsonl` and `outputs/sft_50tools_direct_eval_results.csv`.
 - `notebooks/grpo_50_tools_eval_table.ipynb`: 50-tool GRPO adapter; saves `outputs/grpo_50tools_direct_eval_results.jsonl` and `outputs/grpo_50tools_direct_eval_results.csv`.
 
-Open and run the GRPO notebook after training:
+Final scores:
 
-```text
-notebooks/grpo_50_tools_eval_table.ipynb
-```
+| Model | Total Reward | Percentage |
+| --- | ---: | ---: |
+| Base model | 9 / 200 | 4.5% |
+| SFT adapter | 158 / 200 | 79.0% |
+| GRPO adapter | 183 / 200 | 91.5% |

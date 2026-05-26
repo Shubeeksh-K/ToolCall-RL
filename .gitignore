@@ -11,6 +11,7 @@ wheels/
 .venv
 outputs/
 .agents/
+.adk/
 .codex/
 .pytest_cache/
 .ruff_cache/

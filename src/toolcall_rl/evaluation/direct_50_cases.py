@@ -2,22 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
+from toolcall_rl.evaluation.scoring import EvalCase
 from toolcall_rl.evaluation.schemas import system_prompt_for_tool
 
 
-@dataclass(frozen=True)
-class DirectEvalCase:
-    prompt: str
-    system_prompt: str
-    expected_tool: str
-    expected_args: dict[str, Any]
-
-
-def _case(tool: str, request: str, expected_args: dict[str, Any]) -> DirectEvalCase:
-    return DirectEvalCase(
+def _case(tool: str, request: str, expected_args: dict[str, Any]) -> EvalCase:
+    return EvalCase(
         prompt=request,
         system_prompt=system_prompt_for_tool(tool),
         expected_tool=tool,

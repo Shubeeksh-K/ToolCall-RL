@@ -1,4 +1,3 @@
-from toolcall_rl.evaluation.cases import HELD_OUT_EVAL_CASES, EvalCase
 from toolcall_rl.evaluation.direct_50_cases import DIRECT_50_EVAL_CASES
 from toolcall_rl.evaluation.rewards import (
     reward_args_match,
@@ -6,13 +5,8 @@ from toolcall_rl.evaluation.rewards import (
     reward_tool_match,
     reward_valid_json,
 )
-from toolcall_rl.evaluation.scoring import score_response
-from toolcall_rl.evaluation.schemas import SFT_TOOL_NAMES, TOOL_NAMES
-
-
-def test_held_out_eval_covers_each_training_tool() -> None:
-    assert len(HELD_OUT_EVAL_CASES) == 20
-    assert {case.expected_tool for case in HELD_OUT_EVAL_CASES} == set(SFT_TOOL_NAMES)
+from toolcall_rl.evaluation.scoring import EvalCase, score_response
+from toolcall_rl.evaluation.schemas import TOOL_NAMES
 
 
 def test_direct_50_eval_covers_all_grpo_tools_in_ten_tool_batches() -> None:

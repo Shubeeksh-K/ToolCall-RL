@@ -23,7 +23,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_PATH = PROJECT_ROOT / "data" / "grpo" / "tool_call_grpo.jsonl"
 SFT_ADAPTER_DIR = PROJECT_ROOT / "outputs" / "sft_smollm_20tools"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "grpo_smollm_50tools_direct"
-LOGGING_DIR = PROJECT_ROOT / "outputs" / "tensorboard" / "grpo_smollm_50tools_direct"
+LOGGING_DIR = OUTPUT_DIR / "runs"
 MODEL_ID = os.getenv("GRPO_MODEL_ID", "HuggingFaceTB/SmolLM-1.7B-Instruct")
 
 
