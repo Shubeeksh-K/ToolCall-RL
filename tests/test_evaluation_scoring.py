@@ -1,4 +1,5 @@
-from toolcall_rl.evaluation.cases import EvalCase
+from toolcall_rl.evaluation.cases import HELD_OUT_EVAL_CASES, EvalCase
+from toolcall_rl.evaluation.direct_50_cases import DIRECT_50_EVAL_CASES
 from toolcall_rl.evaluation.rewards import (
     reward_args_match,
     reward_json_only,
@@ -6,6 +7,20 @@ from toolcall_rl.evaluation.rewards import (
     reward_valid_json,
 )
 from toolcall_rl.evaluation.scoring import score_response
+from toolcall_rl.evaluation.schemas import SFT_TOOL_NAMES, TOOL_NAMES
+
+
+def test_held_out_eval_covers_each_training_tool() -> None:
+    assert len(HELD_OUT_EVAL_CASES) == 20
+    assert {case.expected_tool for case in HELD_OUT_EVAL_CASES} == set(SFT_TOOL_NAMES)
+
+
+def test_direct_50_eval_covers_all_grpo_tools_in_ten_tool_batches() -> None:
+    assert len(DIRECT_50_EVAL_CASES) == 50
+    assert {case.expected_tool for case in DIRECT_50_EVAL_CASES} == set(TOOL_NAMES)
+    assert all(case.system_prompt.count("\n- ") == 10 for case in DIRECT_50_EVAL_CASES)
+    assert all(case.expected_tool in case.system_prompt for case in DIRECT_50_EVAL_CASES)
+    assert all("ARCHIVED:" not in case.prompt and "FINAL:" not in case.prompt for case in DIRECT_50_EVAL_CASES)
 
 
 def test_score_response_passes_exact_tool_call() -> None:
@@ -25,6 +40,78 @@ def test_score_response_passes_exact_tool_call() -> None:
     assert score.tool_match == 1
     assert score.args_match == 1
     assert score.total_reward == 4
+
+
+def test_calculator_args_match_equivalent_expression_results() -> None:
+    case = EvalCase(
+        prompt="Work out (73 * 9) - 14.",
+        expected_tool="calculator",
+        expected_args={"expression": "(73 * 9) - 14"},
+    )
+
+    score = score_response(
+        '{"tool": "calculator", "args": {"expression": "73 * 9 - 14"}}',
+        case,
+    )
+
+    assert score.args_match == 1
+    assert score.total_reward == 4
+
+
+def test_calculator_args_reject_different_expression_results() -> None:
+    case = EvalCase(
+        prompt="Work out (2 + 3) * 4.",
+        expected_tool="calculator",
+        expected_args={"expression": "(2 + 3) * 4"},
+    )
+
+    score = score_response(
+        '{"tool": "calculator", "args": {"expression": "2 + 3 * 4"}}',
+        case,
+    )
+
+    assert score.args_match == 0
+    assert score.total_reward == 3
+
+
+def test_compare_products_features_match_regardless_of_order() -> None:
+    case = EvalCase(
+        prompt="Compare two laptops.",
+        expected_tool="compare_products",
+        expected_args={
+            "products": ["PeakBook", "ThinNote"],
+            "category": "laptop",
+            "currency": "USD",
+            "max_price": 1450,
+            "features": ["battery life", "linux support"],
+        },
+    )
+
+    score = score_response(
+        '{"tool": "compare_products", "args": {"products": ["PeakBook", "ThinNote"], '
+        '"category": "laptop", "currency": "USD", "max_price": 1450, '
+        '"features": ["linux support", "battery life"]}}',
+        case,
+    )
+
+    assert score.args_match == 1
+    assert score.total_reward == 4
+
+
+def test_compare_products_features_still_reject_wrong_values() -> None:
+    case = EvalCase(
+        prompt="Compare two laptops.",
+        expected_tool="compare_products",
+        expected_args={"features": ["battery life", "linux support"]},
+    )
+
+    score = score_response(
+        '{"tool": "compare_products", "args": {"features": ["linux support", "touchscreen"]}}',
+        case,
+    )
+
+    assert score.args_match == 0
+    assert score.total_reward == 3
 
 
 def test_score_response_detects_json_with_extra_text() -> None:

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .cases import EvalCase
+from toolcall_rl.tools.calculator import calculator
 
 
 @dataclass(frozen=True)
@@ -34,7 +35,7 @@ def score_response(response_text: str, case: EvalCase) -> Score:
         tool_match = int(parsed.get("tool") == case.expected_tool)
         args = parsed.get("args")
         if tool_match and isinstance(args, dict):
-            args_match = int(args_contain_expected(args, case.expected_args))
+            args_match = int(args_contain_expected(args, case.expected_args, case.expected_tool))
 
     total_reward = valid_json + json_only + tool_match + args_match
 
@@ -70,16 +71,65 @@ def is_json_only(response_text: str) -> bool:
     return _loads_object(response_text.strip()) is not None
 
 
-def args_contain_expected(actual: dict[str, Any], expected: dict[str, Any]) -> bool:
+def args_contain_expected(
+    actual: dict[str, Any],
+    expected: dict[str, Any],
+    expected_tool: str | None = None,
+) -> bool:
     """Return true when all expected args are present and equivalent."""
 
     for key, expected_value in expected.items():
         if key not in actual:
             return False
+        if expected_tool == "calculator" and key == "expression":
+            if not calculator_expressions_match(actual[key], expected_value):
+                return False
+            continue
+        if expected_tool == "compare_products" and key == "features":
+            if not unordered_list_values_match(actual[key], expected_value):
+                return False
+            continue
         if not values_match(actual[key], expected_value):
             return False
 
     return True
+
+
+def calculator_expressions_match(actual: Any, expected: Any) -> bool:
+    """Match arithmetic expressions by their safely computed result."""
+
+    if not isinstance(actual, str) or not isinstance(expected, str):
+        return False
+
+    actual_result = calculator(actual)
+    expected_result = calculator(expected)
+    if "result" not in actual_result or "result" not in expected_result:
+        return values_match(actual, expected)
+
+    return values_match(actual_result["result"], expected_result["result"])
+
+
+def unordered_list_values_match(actual: Any, expected: Any) -> bool:
+    """Match an unordered list while preserving multiplicity."""
+
+    if not isinstance(actual, list) or not isinstance(expected, list):
+        return False
+
+    unmatched = list(actual)
+    for expected_value in expected:
+        match_index = next(
+            (
+                index
+                for index, actual_value in enumerate(unmatched)
+                if values_match(actual_value, expected_value)
+            ),
+            None,
+        )
+        if match_index is None:
+            return False
+        unmatched.pop(match_index)
+
+    return not unmatched
 
 
 def values_match(actual: Any, expected: Any) -> bool:

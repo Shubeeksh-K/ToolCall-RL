@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = [
     "accelerate>=1.13.0",
     "datasets>=4.8.5",
-    "google-adk>=2.0.0",
+    "google-adk>=2.0.1",
     "litellm>=1.80.8",
     "peft>=0.19.1",
     "pydantic>=2.13.4",

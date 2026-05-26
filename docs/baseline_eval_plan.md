@@ -28,79 +28,45 @@ No markdown, no explanation, no surrounding text.
 
 ## Tool Schemas
 
-### calculator
+The original baseline and SFT curriculum contains 20 tool schemas:
 
-Use for arithmetic.
-
-```json
-{
-  "tool": "calculator",
-  "args": {
-    "expression": "24 * 17"
-  }
-}
+```text
+calculator, google_search, unit_converter, text_stats, string_formatter,
+weather_lookup, currency_converter, translate_text, create_calendar_event,
+send_email, restaurant_search, book_flight, hotel_search, route_planner,
+product_search, set_reminder, track_package, stock_quote, file_search,
+schedule_meeting
 ```
 
-### google_search
+The exact argument definitions and compact model prompt live in
+`src/toolcall_rl/evaluation/schemas.py`.
 
-Use when the user asks to search Google or find web/current information.
-
-This is a no-key, no-network intent tool. It only records the query.
+Examples include simple argument structures:
 
 ```json
-{
-  "tool": "google_search",
-  "args": {
-    "query": "google adk ollama tools"
-  }
-}
+{"tool": "stock_quote", "args": {"ticker": "NVDA"}}
 ```
 
-### unit_converter
-
-Use for supported unit conversions.
+and more complex structures:
 
 ```json
 {
-  "tool": "unit_converter",
+  "tool": "schedule_meeting",
   "args": {
-    "value": 10,
-    "from_unit": "kilometers",
-    "to_unit": "miles"
-  }
-}
-```
-
-### text_stats
-
-Use to count words, sentences, or characters.
-
-```json
-{
-  "tool": "text_stats",
-  "args": {
-    "text": "Hello world. Tool calls work!"
-  }
-}
-```
-
-### string_formatter
-
-Use to uppercase, lowercase, titlecase, or reverse text.
-
-```json
-{
-  "tool": "string_formatter",
-  "args": {
-    "text": "learning tool calls",
-    "operation": "titlecase"
+    "title": "Model review",
+    "date": "2026-06-12",
+    "time": "14:00",
+    "timezone": "UTC",
+    "attendees": ["alice@example.com", "bob@example.com"]
   }
 }
 ```
 
 ## Baseline Prompt Template
 
-The notebook can keep using `litellm.completion`.
+The evaluation notebooks load `HuggingFaceTB/SmolLM-1.7B-Instruct` directly
+with Transformers. The legacy command-line baseline runner can still use
+LiteLLM separately.
 
 System prompt shape:
 
@@ -149,6 +115,47 @@ Dependency rules:
 ## Implemented Files
 
 - `src/toolcall_rl/evaluation/schemas.py`: tool schema prompt and tool names.
-- `src/toolcall_rl/evaluation/cases.py`: 10 seed eval cases, 2 per tool.
+- `src/toolcall_rl/evaluation/cases.py`: 20 held-out cases, one unseen example per tool.
 - `src/toolcall_rl/evaluation/scoring.py`: shared binary scoring logic.
 - `src/toolcall_rl/evaluation/baseline.py`: LiteLLM baseline runner.
+
+## Training Dataset Split
+
+- Canonical dataset: 20 tools x 50 examples = 1,000 records.
+- SFT dataset: first 25 examples per tool = 500 records.
+- GRPO dataset: 50 tools x 50 direct examples = 2,500 records.
+
+GRPO adds 30 previously unseen tools with mostly four-to-seven arguments. Its
+records use argument combinations for the original tools that were excluded
+from SFT. All prompts are direct requests so this experiment measures
+adaptation to the expanded tool inventory and richer argument structures.
+
+All 50 GRPO schemas are divided into five fixed batches of 10. A GRPO example
+receives only the system prompt for the batch containing its target tool, not
+a common prompt containing every available tool.
+
+## Evaluation Tracks
+
+The original 20-tool benchmark is retained as a historical baseline for the
+first SFT stage:
+
+- `notebooks/baseline_eval_table.ipynb`: base model on the original 20 tools.
+- `notebooks/sft_eval_table.ipynb`: SFT adapter on the original 20 tools.
+
+The expanded 50-tool benchmark is the comparison to use when evaluating
+adaptation through GRPO.
+
+## Direct 50-Tool Evaluation
+
+`src/toolcall_rl/evaluation/direct_50_cases.py` defines 50 separate held-out direct
+requests, one for each GRPO tool, using the same ten-tool prompt batches but
+values not included in GRPO training.
+
+`notebooks/base_50_tools_eval_table.ipynb` evaluates the untrained base model
+on these cases, providing the expanded-tool baseline.
+
+`notebooks/sft_50_tools_eval_table.ipynb` evaluates the SFT adapter on these
+cases to record its pre-GRPO performance on the expanded tool set.
+
+`notebooks/grpo_50_tools_eval_table.ipynb` evaluates the trained GRPO adapter
+on the identical cases for direct comparison with the SFT result.

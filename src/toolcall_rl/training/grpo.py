@@ -1,4 +1,4 @@
-"""GRPO training for tool-call JSON accuracy starting from the SFT adapter."""
+"""GRPO training for adapting the SFT model to 50 direct-request tools."""
 
 from __future__ import annotations
 
@@ -21,9 +21,9 @@ from toolcall_rl.evaluation.rewards import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_PATH = PROJECT_ROOT / "data" / "grpo" / "tool_call_grpo.jsonl"
-SFT_ADAPTER_DIR = PROJECT_ROOT / "outputs" / "sft_smollm_toolcall"
-OUTPUT_DIR = PROJECT_ROOT / "outputs" / "grpo_smollm_toolcall"
-LOGGING_DIR = PROJECT_ROOT / "outputs" / "tensorboard" / "grpo_smollm_toolcall"
+SFT_ADAPTER_DIR = PROJECT_ROOT / "outputs" / "sft_smollm_20tools"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "grpo_smollm_50tools_direct"
+LOGGING_DIR = PROJECT_ROOT / "outputs" / "tensorboard" / "grpo_smollm_50tools_direct"
 MODEL_ID = os.getenv("GRPO_MODEL_ID", "HuggingFaceTB/SmolLM-1.7B-Instruct")
 
 
@@ -53,7 +53,7 @@ def main() -> None:
         output_dir=str(OUTPUT_DIR),
         logging_dir=str(LOGGING_DIR),
         report_to=["tensorboard"],
-        run_name="grpo_smollm_toolcall",
+        run_name="grpo_smollm_50tools_direct",
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         generation_batch_size=4,

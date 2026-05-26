@@ -9,3 +9,8 @@ wheels/
 
 # Virtual environments
 .venv
+outputs/
+.agents/
+.codex/
+.pytest_cache/
+.ruff_cache/

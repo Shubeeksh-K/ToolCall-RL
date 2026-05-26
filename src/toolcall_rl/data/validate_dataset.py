@@ -7,17 +7,11 @@ from pathlib import Path
 from typing import Any
 
 from toolcall_rl.data.build_dataset import DEFAULT_OUTPUT_PATH
-from toolcall_rl.evaluation.schemas import TOOL_NAMES
+from toolcall_rl.evaluation.schemas import TOOL_NAMES, TOOL_SCHEMAS
 from toolcall_rl.evaluation.scoring import is_json_only
 
 
-REQUIRED_ARG_KEYS = {
-    "calculator": {"expression"},
-    "google_search": {"query"},
-    "unit_converter": {"value", "from_unit", "to_unit"},
-    "text_stats": {"text"},
-    "string_formatter": {"text", "operation"},
-}
+REQUIRED_ARG_KEYS = {tool: set(schema["args"]) for tool, schema in TOOL_SCHEMAS.items()}
 
 
 def load_jsonl(path: Path = DEFAULT_OUTPUT_PATH) -> list[dict[str, Any]]:
@@ -53,6 +47,12 @@ def validate_records(records: list[dict[str, Any]]) -> list[str]:
         missing_keys = REQUIRED_ARG_KEYS[tool] - set(expected_args)
         if missing_keys:
             errors.append(f"{prefix}: missing expected_args keys {sorted(missing_keys)}")
+        unexpected_keys = set(expected_args) - REQUIRED_ARG_KEYS[tool]
+        if unexpected_keys:
+            errors.append(f"{prefix}: unexpected expected_args keys {sorted(unexpected_keys)}")
+        for key, expected_type in TOOL_SCHEMAS[tool]["args"].items():
+            if key in expected_args and not _matches_type(expected_args[key], expected_type):
+                errors.append(f"{prefix}: {key} must be {expected_type}")
 
         assistant_response = record.get("assistant_response")
         if assistant_response != {"tool": tool, "args": expected_args}:
@@ -64,6 +64,18 @@ def validate_records(records: list[dict[str, Any]]) -> list[str]:
             errors.append(f"{prefix}: assistant_response is not JSON-only")
 
     return errors
+
+
+def _matches_type(value: Any, expected_type: str) -> bool:
+    if expected_type == "string":
+        return isinstance(value, str)
+    if expected_type == "number":
+        return isinstance(value, int | float) and not isinstance(value, bool)
+    if expected_type == "boolean":
+        return isinstance(value, bool)
+    if expected_type == "list[string]":
+        return isinstance(value, list) and all(isinstance(item, str) for item in value)
+    return False
 
 
 def validate_dataset(path: Path = DEFAULT_OUTPUT_PATH) -> None:

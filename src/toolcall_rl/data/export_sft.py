@@ -12,6 +12,7 @@ from toolcall_rl.evaluation.schemas import SYSTEM_PROMPT
 
 
 DEFAULT_SFT_PATH = PROJECT_ROOT / "data" / "sft" / "tool_call_sft.jsonl"
+EXAMPLES_PER_TOOL = 25
 
 
 def to_sft_record(record: dict[str, Any]) -> dict[str, Any]:
@@ -35,12 +36,27 @@ def export_sft(
     if errors:
         raise ValueError("\n".join(errors))
 
-    sft_records = [to_sft_record(record) for record in records]
+    selected_records = _first_examples_per_tool(records, EXAMPLES_PER_TOOL)
+    sft_records = [to_sft_record(record) for record in selected_records]
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as file:
         for record in sft_records:
             file.write(json.dumps(record, ensure_ascii=True) + "\n")
     return sft_records
+
+
+def _first_examples_per_tool(
+    records: list[dict[str, Any]],
+    examples_per_tool: int,
+) -> list[dict[str, Any]]:
+    counts: dict[str, int] = {}
+    selected = []
+    for record in records:
+        tool = record["expected_tool"]
+        counts[tool] = counts.get(tool, 0) + 1
+        if counts[tool] <= examples_per_tool:
+            selected.append(record)
+    return selected
 
 
 def main() -> None:

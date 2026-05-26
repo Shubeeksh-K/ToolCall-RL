@@ -1,4 +1,4 @@
-"""Small seed dataset for baseline tool-call evaluation."""
+"""Held-out cases for measuring tool-call generalization."""
 
 from __future__ import annotations
 
@@ -13,55 +13,112 @@ class EvalCase:
     expected_args: dict[str, Any]
 
 
-SEED_EVAL_CASES = [
+HELD_OUT_EVAL_CASES = [
+    EvalCase("Work out (73 * 9) - 14.", "calculator", {"expression": "(73 * 9) - 14"}),
     EvalCase(
-        prompt="What is 24 * 17?",
-        expected_tool="calculator",
-        expected_args={"expression": "24 * 17"},
+        "Search Google for current LoRA adapter merging tutorials.",
+        "google_search",
+        {"query": "current LoRA adapter merging tutorials"},
     ),
     EvalCase(
-        prompt="Calculate (892 + 431) / 3 using the calculator.",
-        expected_tool="calculator",
-        expected_args={"expression": "(892 + 431) / 3"},
+        "I have 27.5 miles; express that in kilometers.",
+        "unit_converter",
+        {"value": 27.5, "from_unit": "miles", "to_unit": "kilometers"},
     ),
     EvalCase(
-        prompt="Search Google for recent news about open source AI agents.",
-        expected_tool="google_search",
-        expected_args={"query": "recent news about open source AI agents"},
+        'Give text statistics for: "Adapters are compact. Rewards improve precision."',
+        "text_stats",
+        {"text": "Adapters are compact. Rewards improve precision."},
     ),
     EvalCase(
-        prompt="Use Google to find information about the Google ADK.",
-        expected_tool="google_search",
-        expected_args={"query": "Google ADK"},
+        'Convert "REWARD SIGNAL" to lowercase.',
+        "string_formatter",
+        {"text": "REWARD SIGNAL", "operation": "lowercase"},
     ),
     EvalCase(
-        prompt="Convert 10 kilometers to miles.",
-        expected_tool="unit_converter",
-        expected_args={"value": 10, "from_unit": "kilometers", "to_unit": "miles"},
+        "Get the weather for Madrid using celsius units.",
+        "weather_lookup",
+        {"city": "Madrid", "unit": "celsius"},
     ),
     EvalCase(
-        prompt="How many pounds are in 7 kilograms?",
-        expected_tool="unit_converter",
-        expected_args={"value": 7, "from_unit": "kilograms", "to_unit": "pounds"},
+        "Exchange 325 USD into CAD.",
+        "currency_converter",
+        {"amount": 325, "from_currency": "USD", "to_currency": "CAD"},
     ),
     EvalCase(
-        prompt='Count the words and sentences in: "Hello world. Tool calls work!"',
-        expected_tool="text_stats",
-        expected_args={"text": "Hello world. Tool calls work!"},
+        'Translate "machine learning" from English into Portuguese.',
+        "translate_text",
+        {"text": "machine learning", "source_language": "English", "target_language": "Portuguese"},
     ),
     EvalCase(
-        prompt='How many characters are in this text: "small models can learn tools"',
-        expected_tool="text_stats",
-        expected_args={"text": "small models can learn tools"},
+        'Add "Evaluation review" to my calendar on 2026-08-03 at 09:45 in UTC.',
+        "create_calendar_event",
+        {"title": "Evaluation review", "date": "2026-08-03", "time": "09:45", "timezone": "UTC"},
     ),
     EvalCase(
-        prompt='Make this title case: "learning tool calls"',
-        expected_tool="string_formatter",
-        expected_args={"text": "learning tool calls", "operation": "titlecase"},
+        'Email qa@example.com with subject "Test result" and message "All held-out checks passed."',
+        "send_email",
+        {"recipient": "qa@example.com", "subject": "Test result", "body": "All held-out checks passed."},
     ),
     EvalCase(
-        prompt='Reverse this text: "stressed"',
-        expected_tool="string_formatter",
-        expected_args={"text": "stressed", "operation": "reverse"},
+        "Find Vietnamese restaurants in Houston costing no more than 32 dollars.",
+        "restaurant_search",
+        {"city": "Houston", "cuisine": "Vietnamese", "max_price": 32},
+    ),
+    EvalCase(
+        "Find 2 premium economy flights from Madrid to Lisbon on 2026-08-14.",
+        "book_flight",
+        {
+            "origin": "Madrid",
+            "destination": "Lisbon",
+            "date": "2026-08-14",
+            "passengers": 2,
+            "cabin": "premium economy",
+        },
+    ),
+    EvalCase(
+        "Search for a hotel in Singapore for 3 guests from 2026-09-01 to 2026-09-05 under 260.",
+        "hotel_search",
+        {"city": "Singapore", "check_in": "2026-09-01", "check_out": "2026-09-05", "guests": 3, "max_price": 260},
+    ),
+    EvalCase(
+        "Give me cycling directions from River Park to City Hall and avoid tolls.",
+        "route_planner",
+        {"origin": "River Park", "destination": "City Hall", "mode": "cycling", "avoid_tolls": True},
+    ),
+    EvalCase(
+        "Find an ergonomic mouse below 65 dollars rated at least 4.4.",
+        "product_search",
+        {"query": "ergonomic mouse", "max_price": 65, "min_rating": 4.4},
+    ),
+    EvalCase(
+        'Set a reminder to "Evaluate GRPO output" on 2026-08-07 at 18:45 in UTC.',
+        "set_reminder",
+        {"message": "Evaluate GRPO output", "date": "2026-08-07", "time": "18:45", "timezone": "UTC"},
+    ),
+    EvalCase(
+        "Check my DHL package with tracking number JD9990001112223334.",
+        "track_package",
+        {"carrier": "DHL", "tracking_number": "JD9990001112223334"},
+    ),
+    EvalCase("Fetch a quote for ORCL.", "stock_quote", {"ticker": "ORCL"}),
+    EvalCase(
+        'Find CSV files matching "evaluation scores" inside /reports.',
+        "file_search",
+        {"query": "evaluation scores", "directory": "/reports", "file_type": "csv"},
+    ),
+    EvalCase(
+        'Schedule "Training debrief" for 2026-08-09 at 13:15 in UTC with ana@example.com and jo@example.com.',
+        "schedule_meeting",
+        {
+            "title": "Training debrief",
+            "date": "2026-08-09",
+            "time": "13:15",
+            "timezone": "UTC",
+            "attendees": ["ana@example.com", "jo@example.com"],
+        },
     ),
 ]
+
+# Kept as the public name used by the existing evaluation runners and notebooks.
+SEED_EVAL_CASES = HELD_OUT_EVAL_CASES

@@ -1,4 +1,4 @@
-"""Export canonical tool-call data to GRPO prompt/label format."""
+"""Export direct 50-tool data to GRPO prompt/label format."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from toolcall_rl.data.build_dataset import DEFAULT_OUTPUT_PATH, PROJECT_ROOT
+from toolcall_rl.data.build_dataset import PROJECT_ROOT
+from toolcall_rl.data.build_grpo_dataset import DEFAULT_GRPO_SOURCE_PATH
 from toolcall_rl.data.validate_dataset import load_jsonl, validate_records
-from toolcall_rl.evaluation.schemas import SYSTEM_PROMPT
 
 
 DEFAULT_GRPO_PATH = PROJECT_ROOT / "data" / "grpo" / "tool_call_grpo.jsonl"
@@ -18,7 +18,7 @@ def to_grpo_record(record: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": record["id"],
         "prompt": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": record["system_prompt"]},
             {"role": "user", "content": record["prompt"]},
         ],
         "expected_tool": record["expected_tool"],
@@ -27,7 +27,7 @@ def to_grpo_record(record: dict[str, Any]) -> dict[str, Any]:
 
 
 def export_grpo(
-    input_path: Path = DEFAULT_OUTPUT_PATH,
+    input_path: Path = DEFAULT_GRPO_SOURCE_PATH,
     output_path: Path = DEFAULT_GRPO_PATH,
 ) -> list[dict[str, Any]]:
     records = load_jsonl(input_path)

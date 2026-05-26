@@ -14,8 +14,8 @@ from trl import SFTConfig, SFTTrainer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_PATH = PROJECT_ROOT / "data" / "sft" / "tool_call_sft.jsonl"
-OUTPUT_DIR = PROJECT_ROOT / "outputs" / "sft_smollm_toolcall"
-LOGGING_DIR = PROJECT_ROOT / "outputs" / "tensorboard" / "sft_smollm_toolcall"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "sft_smollm_20tools"
+LOGGING_DIR = PROJECT_ROOT / "outputs" / "tensorboard" / "sft_smollm_20tools"
 MODEL_ID = os.getenv("SFT_MODEL_ID", "HuggingFaceTB/SmolLM-1.7B-Instruct")
 
 
