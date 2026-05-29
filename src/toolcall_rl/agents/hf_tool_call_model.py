@@ -152,10 +152,13 @@ def _latest_user_text(llm_request: LlmRequest) -> str:
 
 
 def _latest_function_response(llm_request: LlmRequest) -> types.FunctionResponse | None:
-    for content in reversed(llm_request.contents):
-        for part in reversed(content.parts or []):
-            if part.function_response is not None:
-                return part.function_response
+    if not llm_request.contents:
+        return None
+
+    latest_content = llm_request.contents[-1]
+    for part in reversed(latest_content.parts or []):
+        if part.function_response is not None:
+            return part.function_response
     return None
 
 
