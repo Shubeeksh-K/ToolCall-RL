@@ -780,7 +780,7 @@ http = [
 
 [[package]]
 name = "google-adk"
-version = "2.0.0"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosqlite" },
@@ -797,6 +797,7 @@ dependencies = [
     { name = "packaging" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "python-multipart" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "starlette" },
@@ -807,9 +808,9 @@ dependencies = [
     { name = "watchdog" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/08/e9af9ab3b0df422f9c9c07251840f8be876694852d3ac06dbe4e15ce01a7/google_adk-2.0.0.tar.gz", hash = "sha256:2f53c70b5de8409d427f0955bc89f1ba30a8397dec5aefa0ac7c3ecd1b4018d4", size = 3337944, upload-time = "2026-05-19T16:17:10.664Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/02/d2/58823ea0d5ac32143773d377b014123191ce420480c003190e1f86a9667c/google_adk-2.1.0.tar.gz", hash = "sha256:fd1709bf5e70e5aaa7d148c7b788d2cd00bb659ee10505a731bb2ad609d28968", size = 3340742, upload-time = "2026-05-23T00:13:56.793Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/f5/596e879aacad5214945ede50a4c8e4a0811979ecff83c91e0df11ef13961/google_adk-2.0.0-py3-none-any.whl", hash = "sha256:6d06d8e3b9119ccd7721505356f8c0a5253dcfdc426dd9a72e0fef1cf9ed4703", size = 3846211, upload-time = "2026-05-19T16:17:08.081Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/5b/56a9992b6f9447437f29e3691a487b16dfdea42aedec16ceced9de88b9f8/google_adk-2.1.0-py3-none-any.whl", hash = "sha256:4ec8a0ccdf8af90f9fa505c740cae921b47590aee3d61bca14f7bfa8bc886e4e", size = 3852259, upload-time = "2026-05-23T00:13:59.611Z" },
 ]
 
 [[package]]
@@ -2343,6 +2344,15 @@ wheels = [
 ]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.29"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/fe/70bd71a6738b09a0bdf6480ca6436b167469ca4578b2a0efbe390b4b0e70/python_multipart-0.0.29.tar.gz", hash = "sha256:643e93849196645e2dbdd81a0f8829a23123ad7f797a84a364c6fb3563f18904", size = 45678, upload-time = "2026-05-17T17:29:47.654Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/cb/769cfc37177252872a45a71f3fbdde9d51b471a3f3c14bfe95dde3407386/python_multipart-0.0.29-py3-none-any.whl", hash = "sha256:2ddcc971cef266225f54f552d8fa10bcfbb1f14446caec199060daac59ff2d69", size = 29640, upload-time = "2026-05-17T17:29:45.69Z" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2908,7 +2918,7 @@ dev = [
 requires-dist = [
     { name = "accelerate", specifier = ">=1.13.0" },
     { name = "datasets", specifier = ">=4.8.5" },
-    { name = "google-adk", specifier = ">=2.0.0" },
+    { name = "google-adk", specifier = ">=2.0.1" },
     { name = "litellm", specifier = ">=1.80.8" },
     { name = "peft", specifier = ">=0.19.1" },
     { name = "pydantic", specifier = ">=2.13.4" },

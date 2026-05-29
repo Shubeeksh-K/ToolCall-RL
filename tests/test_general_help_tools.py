@@ -10,14 +10,9 @@ from toolcall_rl.tools import (
 )
 
 
-AGENT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "src"
-    / "toolcall_rl"
-    / "agents"
-    / "Base_Model"
-    / "agent.py"
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+BASE_AGENT_PATH = PROJECT_ROOT / "src" / "toolcall_rl" / "agents" / "Base_Model" / "agent.py"
+FT_AGENT_PATH = PROJECT_ROOT / "src" / "toolcall_rl" / "agents" / "FT_Model" / "agent.py"
 
 
 def test_calculator_evaluates_basic_arithmetic() -> None:
@@ -55,21 +50,33 @@ def test_string_formatter_applies_requested_operation() -> None:
     assert result["result"] == "Hello Tools"
 
 
-def test_root_agent_exposes_required_tools() -> None:
-    spec = spec_from_file_location("base_model_agent", AGENT_PATH)
-    assert spec is not None
-    assert spec.loader is not None
+def test_demo_agents_expose_same_required_tools() -> None:
+    base_agent = _load_agent(BASE_AGENT_PATH, "base_model_agent")
+    ft_agent = _load_agent(FT_AGENT_PATH, "ft_model_agent")
 
-    agent_module = module_from_spec(spec)
-    spec.loader.exec_module(agent_module)
-    root_agent = agent_module.root_agent
-
-    assert root_agent.name == "general_help_agent"
-    assert root_agent.model.model == "ollama_chat/smollm:1.7b"
-    assert [tool.__name__ for tool in root_agent.tools] == [
+    assert base_agent.name == "base_model_tool_demo"
+    assert ft_agent.name == "ft_model_tool_demo"
+    assert base_agent.model.model == "HuggingFaceTB/SmolLM-1.7B-Instruct"
+    assert ft_agent.model.model == "HuggingFaceTB/SmolLM-1.7B-Instruct"
+    assert ft_agent.model.adapter_dir.endswith("outputs/grpo_smollm_50tools_direct")
+    assert _tool_names(base_agent) == _tool_names(ft_agent) == [
         "calculator",
         "google_search",
         "unit_converter",
         "text_stats",
         "string_formatter",
     ]
+
+
+def _load_agent(agent_path: Path, module_name: str):
+    spec = spec_from_file_location(module_name, agent_path)
+    assert spec is not None
+    assert spec.loader is not None
+
+    agent_module = module_from_spec(spec)
+    spec.loader.exec_module(agent_module)
+    return agent_module.root_agent
+
+
+def _tool_names(agent) -> list[str]:
+    return [tool.__name__ for tool in agent.tools]
