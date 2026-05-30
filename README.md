@@ -2,14 +2,19 @@
 
 ## ADK Tool-Calling Demo
 
-This project includes two Google ADK demo agents that use the same local tools
-but different Hugging Face model weights:
+This project includes three Google ADK demo agents that use the same local
+tools but different model behavior:
 
 - `src/toolcall_rl/agents/Base_Model`: unfine-tuned base model.
-- `src/toolcall_rl/agents/FT_Model`: GRPO fine-tuned adapter.
+- `src/toolcall_rl/agents/FT_Model`: raw GRPO fine-tuned adapter.
+- `src/toolcall_rl/agents/Final_Model`: routed GRPO adapter for the practical demo.
 
-Both agents use a small bridge in `src/toolcall_rl/agents/hf_tool_call_model.py`
-that converts the model's learned JSON output into ADK function calls.
+`Base_Model` and `FT_Model` use the bridge in
+`src/toolcall_rl/agents/hf_tool_call_model.py`, which converts learned JSON
+output into ADK function calls. `Final_Model` uses a separate routed bridge in
+`src/toolcall_rl/agents/routed_hf_tool_call_model.py`; it sends tool-like
+prompts to the fine-tuned model and handles basic chat without forcing a tool
+call.
 
 Run the base-model agent and try the calculator prompt:
 
@@ -40,10 +45,31 @@ The fine-tuned model emits the learned JSON tool-call shape. The bridge turns
 that JSON into an ADK function call, and ADK executes the existing
 `calculator` tool.
 
+Run the routed final agent for a more practical chat surface:
+
+```bash
+uv run adk run src/toolcall_rl/agents/Final_Model
+```
+
+In this version, prompts like `hi` receive a short normal response:
+
+```text
+[user]: hi
+[final_model_tool_demo]: Hi! I can help with calculations, Google search queries, unit conversions, text statistics, and string formatting.
+```
+
+Tool-like prompts still go through the GRPO adapter and ADK tool execution:
+
+```text
+[user]: Calculate (94 / 2) + 11.
+[final_model_tool_demo]: Tool `calculator` returned:
+{"expression": "(94 / 2) + 11", "result": 58.0}
+```
+
 The tools live in `src/toolcall_rl/tools/`, one tool per file:
 
 - `calculator.py`: evaluates basic arithmetic.
-- `google_search.py`: returns the search query without performing a real search.
+- `google_search.py`: searches the web through Tavily using `TAVILY_KEY`.
 - `unit_converter.py`: converts a small set of common units.
 - `text_stats.py`: counts basic text properties.
 - `string_formatter.py`: applies simple text formatting.
@@ -54,6 +80,9 @@ Optional environment variables:
 BASE_HF_MODEL_ID=HuggingFaceTB/SmolLM-1.7B-Instruct
 FT_HF_MODEL_ID=HuggingFaceTB/SmolLM-1.7B-Instruct
 FT_ADAPTER_DIR=outputs/grpo_smollm_50tools_direct
+FINAL_HF_MODEL_ID=HuggingFaceTB/SmolLM-1.7B-Instruct
+FINAL_ADAPTER_DIR=outputs/grpo_smollm_50tools_direct
+TAVILY_KEY=tvly-your-key
 ```
 
 ## Dataset

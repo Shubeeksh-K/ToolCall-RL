@@ -13,6 +13,7 @@ from toolcall_rl.tools import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BASE_AGENT_PATH = PROJECT_ROOT / "src" / "toolcall_rl" / "agents" / "Base_Model" / "agent.py"
 FT_AGENT_PATH = PROJECT_ROOT / "src" / "toolcall_rl" / "agents" / "FT_Model" / "agent.py"
+FINAL_AGENT_PATH = PROJECT_ROOT / "src" / "toolcall_rl" / "agents" / "Final_Model" / "agent.py"
 
 
 def test_calculator_evaluates_basic_arithmetic() -> None:
@@ -25,10 +26,14 @@ def test_calculator_rejects_non_arithmetic_expression() -> None:
     assert "error" in result
 
 
-def test_google_search_returns_query_without_searching() -> None:
+def test_google_search_returns_error_without_tavily_key(monkeypatch) -> None:
+    monkeypatch.setenv("TAVILY_KEY", "")
+    monkeypatch.setenv("TAVILY_API_KEY", "")
+
     result = google_search("google adk ollama")
 
     assert result["query"] == "google adk ollama"
+    assert result["error"] == "TAVILY_KEY is not set."
 
 
 def test_unit_converter_converts_supported_units() -> None:
@@ -53,13 +58,17 @@ def test_string_formatter_applies_requested_operation() -> None:
 def test_demo_agents_expose_same_required_tools() -> None:
     base_agent = _load_agent(BASE_AGENT_PATH, "base_model_agent")
     ft_agent = _load_agent(FT_AGENT_PATH, "ft_model_agent")
+    final_agent = _load_agent(FINAL_AGENT_PATH, "final_model_agent")
 
     assert base_agent.name == "base_model_tool_demo"
     assert ft_agent.name == "ft_model_tool_demo"
+    assert final_agent.name == "final_model_tool_demo"
     assert base_agent.model.model == "HuggingFaceTB/SmolLM-1.7B-Instruct"
     assert ft_agent.model.model == "HuggingFaceTB/SmolLM-1.7B-Instruct"
+    assert final_agent.model.model == "HuggingFaceTB/SmolLM-1.7B-Instruct"
     assert ft_agent.model.adapter_dir.endswith("outputs/grpo_smollm_50tools_direct")
-    assert _tool_names(base_agent) == _tool_names(ft_agent) == [
+    assert final_agent.model.adapter_dir.endswith("outputs/grpo_smollm_50tools_direct")
+    assert _tool_names(base_agent) == _tool_names(ft_agent) == _tool_names(final_agent) == [
         "calculator",
         "google_search",
         "unit_converter",

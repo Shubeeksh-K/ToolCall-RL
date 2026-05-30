@@ -79,3 +79,29 @@ def test_latest_function_response_reads_adk_tool_result() -> None:
     assert function_response is not None
     assert function_response.name == "calculator"
     assert function_response.response == {"result": 5}
+
+
+def test_latest_function_response_ignores_stale_tool_result_after_new_user_message() -> None:
+    request = LlmRequest(
+        contents=[
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text="Calculate 2 + 3.")],
+            ),
+            types.Content(
+                role="function",
+                parts=[
+                    types.Part.from_function_response(
+                        name="calculator",
+                        response={"result": 5},
+                    )
+                ],
+            ),
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text="Convert 10 kilometers to miles.")],
+            ),
+        ]
+    )
+
+    assert _latest_function_response(request) is None
